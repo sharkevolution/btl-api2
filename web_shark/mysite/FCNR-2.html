@@ -1,0 +1,786 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Оптимизация раскроя штрипса</title>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="Cache-Control" content="no-cache"> -->
+    <meta name="description" content="Оптимизация раскроя, алгоритм двумерной упаковки в полуограниченную полосу">
+    <meta name="Keywords" content="раскрой, штрипс, штрипса, раскладка, упаковка, ножи, перестановки, оптимизация, алгоритм, двумерная упаковка">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function (d, w, c) {
+            (w[c] = w[c] || []).push(function() {
+                try {
+                    w.yaCounter42227109 = new Ya.Metrika({
+                        id:42227109,
+                        clickmap:true,
+                        trackLinks:true,
+                        accurateTrackBounce:true
+                    });
+                } catch(e) { }
+            });
+
+            var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+            s.type = "text/javascript";
+            s.async = true;
+            s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", f, false);
+            } else { f(); }
+        })(document, window, "yandex_metrika_callbacks");
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/42227109" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <script type="text/javascript">
+
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-89708631-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
+    <script src="lib/calc.js"></script>
+    <script type="text/javascript">
+      function addScript(src){
+        var script = document.createElement('script');
+        script.src = src;
+        script.async = false; // чтобы гарантировать порядок
+        document.head.appendChild(script);
+      }
+      addScript("https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js");
+      addScript("js/pushy.min.js");
+      addScript("lib/scrollup.js");
+    </script>
+
+    <noscript id="deferred-styles">
+        <!-- <link rel="stylesheet" media="(max-width: 640px)" href="static/scnr.css" type="text/css"> -->
+        <link href="static/scnr.css" rel="stylesheet" type="text/css">
+        <link href="static/calc.css" rel="stylesheet" type="text/css">
+        <link href="css/pushy.css" rel="stylesheet" type="text/css">
+        <link href="static/HTML5_twoColFix.css" rel="stylesheet" type="text/css">
+    </noscript>
+</head>
+
+<body>
+  <!-- Pushy Menu -->
+  <nav class="pushy pushy-left">
+      <ul>
+          <!-- Submenu -->
+          <li class="pushy-submenu">
+              <!-- <a href="#">Инструкция</a>
+              <ul>
+                  <li class="pushy-link"><a href="#">Item 1</a></li>
+                  <li class="pushy-link"><a href="#">Item 2</a></li>
+                  <li class="pushy-link"><a href="#">Item 3</a></li>
+              </ul>
+          </li> -->
+          <li class="pushy-link"><a href="/">На главную</a></li>
+          <li class="pushy-link"><a href="/mystory">Обо мне</a></li>
+      </ul>
+  </nav>
+
+  <!-- Site Overlay -->
+  <div class="site-overlay"></div>
+
+  <!-- Your Content -->
+  <div id="container">
+    <!-- Menu Button -->
+    <div class='navbar navbar-fixed-top maket'>
+      <div class='top-title'>
+        <div class="menu-btn">&#9776; Menu</div>
+        <h1>Block packing</h1>
+        <p>Алгоритм оптимального раскроя штрипса</p>
+      </div>
+    </div>
+  </div>
+  <div id="wrapper">
+      <div id="open_home">
+        <div class="start_module">
+          <form id='home' name='optimus' enctype="multipart/form-data" method="post"
+          onsubmit="submit_figure(this.form);return false;">
+              <input type="submit" value="Start optimization!" id='start' name='tender' value="">
+              <input type="hidden" name="code" id="private" value="{{private_code}}">
+              <input type="hidden" id="resolution" value='0'>
+          </form>
+          <div id="userapp">
+            <table class="tab-style">
+               <tr>
+                  <td>В очереди</td>
+                  <td id='usapp'></td>
+               </tr>
+               <tr>
+                  <td>Номер</td>
+                  <td id='usidx'></td>
+               </tr>
+            </table>
+          </div>
+      </div>
+
+      <div id="myProgress">
+        <div id="myBar">
+          <div id="label">0%</div>
+        </div>
+      </div>
+      <div id="message"></div>
+      <div id="form_step">
+          <div class="poly">
+            <div class="load_file">
+              <h3>Загрузка данных (.xlsx | .txt)</h3>
+              <form id='myForm' action="/upload_figure" enctype="multipart/form-data" method="post">
+                  <p>
+                      <input type="file" onchange="submit_kml(this.form);" name="fkml">
+                      <input type="hidden" name="code" id="private" value="{{private_code}}">
+                  </p>
+              </form>
+            </div>
+            <div class="help_load">
+              <button value="help" class="help-style">Help</button>
+            </div>
+          </div>
+          <div id="background"><!-- Main background -->
+                 <div id="main">
+                     <div class="rows">
+                       <button value="1" class="btn-style num-bg num first-child">1</button>
+                       <button value="2" class="btn-style num-bg num">2</button>
+                       <button value="3" class="btn-style num-bg num">3</button>
+                       <button value="4" class="btn-style num-bg num first-child">4</button>
+                     </div>
+                     <div class="rows">
+                       <button value="5" class="btn-style num-bg num">5</button>
+                       <button value="6" class="btn-style num-bg num">6</button>
+                       <button value="7" class="btn-style num-bg num first-child">7</button>
+                       <button value="8" class="btn-style num-bg num">8</button>
+                      </div>
+                    <div class="rows">
+                       <button value="9" class="btn-style num-bg num">9</button>
+                       <button value="0" class="btn-style num-bg num">0</button>
+                       <button value="F" id='figure' class="btn-style opera-bg fall-back">F</button>
+                       <button value="C" id='count' class="btn-style opera-bg value align">C</button>
+                     </div>
+                     <div id="first-rows">
+                        <button class="del-bg" id="delete">D</button>
+                        <input type="text" id='size' value="" size="4" disabled=1 />
+                      </div>
+                  </div>
+          </div>
+          <div id='infigure'>
+            <div id='cur'>
+              <!-- <ul id='current_data'>
+                <li id='crf'><p>Figure:</p></li>
+                <li id='amf'><p>Count:</p></li>
+              </ul> -->
+              <table class="tab-style">
+                 <tr>
+                    <td>Figure</td>
+                    <td id='crf'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Count</td>
+                    <td id='amf'>0</td>
+                 </tr>
+              </table>
+            </div>
+
+            <div id='total'>
+              <!-- <ul id='total_data'>
+                <li id='tof'><p>Total figure:</p></li>
+                <li id='tocn'><p>Total count:</p></li>
+                <li id='limcn'><p>Limit count :</p></li>
+              </ul> -->
+              <table class="tab-style">
+                 <tr>
+                    <td>Total figure</td>
+                    <td id='tof'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Total count</td>
+                    <td id='tocn'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Limit count</td>
+                    <td id='limcn'>0</td>
+                 </tr>
+              </table>
+            </div>
+           </div>
+
+           <!-- <div id="map">
+             <form method="POST" action="https://api.privatbank.ua/p24api/ishop">
+               <input type="hidden" name="amt" value="0.00" />
+               <input type="hidden" name="ccy" value="UAH" />
+               <input type="hidden" name="merchant" value="124535" />
+               <input type="hidden" name="order" value="12508" />
+               <input type="hidden" name="details" value="упаковка" />
+               <input type="hidden" name="ext_details" value="Алгоритм упаковки блоков в полуограниченную полосу" />
+               <input type="hidden" name="pay_way" value="privat24" />
+               <input type="hidden" name="return_url" value="http://sharkevo.ru" />
+               <input type="hidden" name="server_url" value="http://payment" />
+               <button type="submit"><img src="static/api_logo_2.jpg" border="0" /></button>
+             </form>
+           </div> -->
+
+      </div>
+        <div class="geolist">
+          <h3>Список и количество фигур</h3>
+          <form id='listfruit' name="mylist">
+              <!-- <fieldset>
+                <input class='inp operator' type="checkbox" value="Start"><label for="raz">описание</label>
+              </fieldset> -->
+          </form>
+
+            <!-- <ul id='namepolygon'> -->
+                <!-- {% for zname in zona %}
+                <li><a>{{ zname }}</a></li>
+                {% endfor %} -->
+            <!-- </ul> -->
+        </div>
+        <div class="geolist">
+          <h3>Расчетные показатели</h3>
+        </div>
+
+
+        <div class='rightbox'>
+          <h3>Видео инструкция</h3>
+          <iframe width="290" height="215"
+            src="https://www.youtube.com/embed/EA0WTPVzbW8" frameborder="0" allowfullscreen>
+          </iframe>
+          <h3>Пример работы</h3>
+          <iframe width="290" height="215"
+            src="https://www.youtube.com/embed/cEVa8i-2JVg" frameborder="0" allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class='rightbox'>
+          <h3>Дружественные ресурсы</h3>
+          <p>
+            Высококачественные листы профнастила от завода производителя можно заказать
+            <a href="http://www.dizayn4you.com.ua/profnastil.html">здесь.</a>
+            Доставка собственным транспортом.
+          </p>
+          <p>
+          <img src="img/profnastil.jpg" alt="profnastil" width="295" height="144" class="prof_img">
+          </p>
+        </div>
+
+
+
+    </div>
+
+  <div id="container-inner">
+    <div id="container_navigator">
+          <section class="container_calc">
+              <header class = "mbc_header_calc">
+                      <h3>Инструменты On-line</h3>
+              </header>
+
+              <nav class="sidebar_calc">
+                  <ul class="nav_0">
+                      <li>
+                          <a href="#"><img src="gallery/oil1.png"
+                          alt="Цены на топливо" title="Украина" height="40"
+                          width="40"/>Цены на топливо</a>
+                      </li>
+                      <li>
+                          <a href="#"><img src="gallery/my_documents.png"
+                          alt="43 Приказ" title="Украина" height="40"
+                          width="40"/>Приказ 43</a>
+                      </li>
+                      <li>
+                          <a href="#"><img src="gallery/calc2.png"
+                          alt="" title="Расход топлива, расстояний" height="40"
+                          width="40"/>Автокалькулятор</a>
+                      </li>
+                      <li>
+                          <a href="#"><img src="gallery/comp1.png"
+                          alt="" title="Определение координат" height="40"
+                          width="40"/>Геокодирование</a>
+                      </li>
+                  </ul>
+              </nav>
+          </section>
+
+          <section class="topics">
+              <header class = "mbc_header">
+                      <h3>Разделы</h3>
+              </header>
+
+              <nav class="sidebar">
+                  <ul class="nav_1">
+                      <li>
+                          <a href="#">Excel 2013+ (6)</a>
+                      </li>
+                      <li>
+                          <a href="#">VBA (3)</a>
+                      </li>
+                      <li>
+                          <a href="#">Python 3 (1)</a>
+                      </li>
+                      <li>
+                          <a href="#">Алгоритмы разработка (7)</a>
+                      </li>
+                      <li>
+                          <a href="#">Логистика транспорта (1)</a>
+                      </li>
+                      <li>
+                          <a href="#">GPS навигация (1)</a>
+                      </li>
+                      <li>
+                          <a href="#">Картография (1)</a>
+                      </li>
+                  </ul>
+              </nav>
+
+              <div class="arсhive">
+                  <header class = "mbc_header">
+                      <h3>Архив по месяцам</h3>
+                  </header>
+
+                  <form action="http://ab-w.net/info.php" method="post" name="drop_down_box">
+
+                      <div class="wpan">
+                      <select name="menu" size="1">
+                          <option value="first">Первая позиция</option>
+                          <option selected="selected" value="second">Вторая позиция</option>
+                          <option value="third">Третья позиция</option>
+                          <option value="fourth">Четвертая позиция</option>
+                      </select>
+                      </div>
+                      <p><input type="submit" value="Отправить"></p>
+
+                  </form>
+              </div>
+
+              <header class = "mbc_header">
+                  <h3>Облако тегов</h3>
+              </header>
+              <div id="my_favorite_latin_words"></div>
+          </section>
+    </div>
+
+      <section class ="main_body">
+          <article class="main_body_content">
+            <div id="forums-module">
+                  <header class="root_header">
+                      <h1>Мастер-класс</h1>
+                      <div id="compas">
+                        <ul class="compas_li">
+                            <li>
+                              <a class="compas_heading">Категория:</a>
+                            </li>
+                            <li>
+                              <a class="name_heading" href="#">Python 3</a>
+                      </li>
+                      </div>
+                      <div id="entry_meta">
+                          <h4 class="meta-prep-author">Опубликовано 19.06.2016 Автор Ситала Николай</h4>
+                      </div>
+                  </header>
+
+                  <h3>Как пользоваться этим документом</h3>
+                  <p>Помните, что в CSS этих макетов много комментариев. Если большинство операций
+                  выполняется в представлении «Дизайн», имеет смысл посмотреть код. Там есть советы
+                  по использованию CSS при работе с фиксированными макетами. Перед запуском сайта
+                  комментарии можно удалить. Чтобы узнать больше о методах, используемых в этих
+                  макетах CSS, прочтите следующую статью в Центре разработки Adobe:
+                  <a href="http://www.adobe.com/go/adc_css_layouts">
+                  http://www.adobe.com/go/adc_css_layouts</a>.
+                  </p>
+
+                  <h2>Метод очистки</h2>
+                  <p>Поскольку все столбцы обтекаемы, в этом макете в правиле .footer используется
+                  объявление clear:both. Этот метод очистки заставляет .container видеть места
+                  окончания столбцов, чтобы показать все рамки или фоновые цвета, помещенные в
+                  .container. Если требуется удалить .footer из .container, понадобится другой метод
+                  очистки. Надежнее всего добавить &lt;br class=&quot;clearfloat&quot; /&gt; или &lt
+                  div  class=&quot;clearfloat&quot;&gt;&lt;/div&gt;после последнего обтекаемого
+                  столбца (но до закрытия .container). Эффект очистки будет таким же.
+                  </p>
+
+                  <hr>
+
+                  <h2>Вставка логотипа</h2>
+                  <p>В этом макете установлен местозаполнитель рисунка — в заголовке, где, скорее
+                  всего, будет размещен логотип. Рекомендуется удалить местозаполнитель и заменить
+                  его своим логотипом со ссылкой.
+                  </p>
+                  <p> Помните, что, если вы используете инспектор свойств для перехода к своему
+                  логотипу с помощью поля SRC (вместо удаления и замены местозаполнителя), следует
+                  удалить встроенный фон и свойства экрана. Эти встроенные стили предназначены только
+                  для того, чтобы отображать местозаполнитель в браузере. </p>
+                  <p>Чтобы удалить встроенные стили, убедитесь, что для панели «Стили CSS»
+                  установлено значение «Текущий». Выберите изображение, затем в области «Свойства» на
+                  панели «Стили CSS» щелкните правой кнопкой мыши и удалите свойства экрана и фона.
+                  (Конечно, можно всегда обратиться прямо к коду и удалить встроенные стили из
+                  изображения или местозаполнителя в коде.)</p>
+
+                  <h2>Фоны</h2>
+                  <p>По своей сути фоновый цвет отображается в любом блочном элементе только по длине
+                  содержимого. Это означает, что если фоновый цвет и рамка используются для создания
+                  бокового столбца, то они будут отображены не до нижнего колонтитула, а только до
+                  места, где заканчивается содержимое. Если блок .content должен содержать больше
+                  информации, то можно поместить рамку у блока .content, чтобы отделить его от
+                  столбца.
+                  </p>
+                <a class='read_next' href="#read">Читать далее..</a>
+            </div>
+          </article>
+
+          <article class="main_body_content">
+            <div id="forums-module">
+                  <header class="root_header">
+                      <h1>Мастер-класс</h1>
+                      <div id="compas">
+                        <ul class="compas_li">
+                            <li>
+                              <a class="compas_heading">Категория:</a>
+                            </li>
+                            <li>
+                              <a class="name_heading" href="#">Алгоритмы разработка</a>
+                      </li>
+                      </div>
+                      <div id="entry_meta">
+                          <h4 class="meta-prep meta-prep-author">Опубликовано 20.06.2016 Автор Ситала Николай</h4>
+                      </div>
+                  </header>
+
+                  <h2>Как пользоваться этим документом</h2>
+                  <p>Помните, что в CSS этих макетов много комментариев. Если большинство операций
+                  выполняется в представлении «Дизайн», имеет смысл посмотреть код. Там есть советы
+                  по использованию CSS при работе с фиксированными макетами. Перед запуском сайта
+                  комментарии можно удалить. Чтобы узнать больше о методах, используемых в этих
+                  макетах CSS, прочтите следующую статью в Центре разработки Adobe:
+                  <a href="http://www.adobe.com/go/adc_css_layouts">
+                  http://www.adobe.com/go/adc_css_layouts</a>.
+                  </p>
+
+                  <h2>Метод очистки</h2>
+                  <p>Поскольку все столбцы обтекаемы, в этом макете в правиле .footer используется
+                  объявление clear:both. Этот метод очистки заставляет .container видеть места
+                  окончания столбцов, чтобы показать все рамки или фоновые цвета, помещенные в
+                  .container. Если требуется удалить .footer из .container, понадобится другой метод
+                  очистки. Надежнее всего добавить &lt;br class=&quot;clearfloat&quot; /&gt; или &lt
+                  div  class=&quot;clearfloat&quot;&gt;&lt;/div&gt;после последнего обтекаемого
+                  столбца (но до закрытия .container). Эффект очистки будет таким же.
+                  </p>
+
+                  <h2>Вставка логотипа</h2>
+                  <p>В этом макете установлен местозаполнитель рисунка — в заголовке, где, скорее
+                  всего, будет размещен логотип. Рекомендуется удалить местозаполнитель и заменить
+                  его своим логотипом со ссылкой.
+                  </p>
+                  <p> Помните, что, если вы используете инспектор свойств для перехода к своему
+                  логотипу с помощью поля SRC (вместо удаления и замены местозаполнителя), следует
+                  удалить встроенный фон и свойства экрана. Эти встроенные стили предназначены только
+                  для того, чтобы отображать местозаполнитель в браузере. </p>
+                  <p>Чтобы удалить встроенные стили, убедитесь, что для панели «Стили CSS»
+                  установлено значение «Текущий». Выберите изображение, затем в области «Свойства» на
+                  панели «Стили CSS» щелкните правой кнопкой мыши и удалите свойства экрана и фона.
+                  (Конечно, можно всегда обратиться прямо к коду и удалить встроенные стили из
+                  изображения или местозаполнителя в коде.)</p>
+
+                  <h2>Фоны</h2>
+                  <p>По своей сути фоновый цвет отображается в любом блочном элементе только по длине
+                  содержимого. Это означает, что если фоновый цвет и рамка используются для создания
+                  бокового столбца, то они будут отображены не до нижнего колонтитула, а только до
+                  места, где заканчивается содержимое. Если блок .content должен содержать больше
+                  информации, то можно поместить рамку у блока .content, чтобы отделить его от
+                  столбца.
+                  </p>
+
+                  <div id="cf7" class="shadow">
+                    <img class='opaque' src="gallery/oboi.jpg" />
+                    <img src="gallery/oboitut.jpg" />
+                    <img src="gallery/map.jpg" />
+                </div>
+
+      <p id="cf7_controls">
+                    <span class="selected">Image 1</span>
+                    <span>Image 2</span>
+                    <span>Image 3</span>
+                </p>
+
+                  <input class="hide" id="hd-1" type="checkbox">
+                  <label for="hd-1">Нажмите здесь, чтобы прочитать больше о HTML!</label>
+                  <div>
+                      HTML — стандартный язык разметки документов во Всемирной паутине. Большинство
+                      веб-страниц содержат описание разметки на языке HTML (или XHTML). Язык HTML
+                      интерпретируется браузерами и отображается в виде документа в удобной для человека
+                      форме..
+                  </div>
+                      <br/>
+                      <br/>
+                  <input class="hide" id="hd-2" type="checkbox">
+                  <label for="hd-2">Нажмите здесь, чтобы прочитать больше о CSS!</label>
+                  <div>
+                      CSS - CSS Cascading Style Sheets — каскадные таблицы стилей — формальный язык
+                      описания внешнего вида документа, написанного с использованием языка разметки.
+                      Преимущественно используется как средство описания, оформления внешнего вида
+                      веб-страниц, написанных с помощью языков разметки HTML и XHTML, но может также
+                      применяться к любым XML-документам, например, к SVG или XUL.
+                  </div>
+                  <a class='read_next' href="#read">Читать далее..</a>
+            </div>
+          </article>
+
+          <div class="paginator">
+              <a class='prev' href="#prev">Назад</a>
+              <a href="#1">1</a>
+              <span>&hellip;</span>
+              <a href="#3">3</a>
+              <a class='next' href="#next">Вперёд</a>
+      </div>
+
+      </section>
+  </div>
+
+  </div>
+
+  <div class="footer">
+    <div class='ynm'>
+    <!-- Yandex.Metrika informer -->
+    <a href="https://metrika.yandex.ru/stat/?id=42227109&amp;from=informer"
+    target="_blank" rel="nofollow"><img src="https://informer.yandex.ru/informer/42227109/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"
+    style="width:88px; height:31px; border:0;" alt="Яндекс.Метрика" title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)" class="ym-advanced-informer" data-cid="42227109" data-lang="ru" /></a>
+    <!-- /Yandex.Metrika informer -->
+    </div>
+    <p align="center">
+      &#169; 2017 Shark Evolution.<br>striboga@yandex.ru +(380)732-218-247
+    </p>
+  </div>
+
+  <script type="text/javascript">
+
+    var dis = 0;
+    var intervalID = 0;
+    var unique = "{{private_code}}";
+    var obj = eval("{{zona}}");
+    var plf = Object.keys(obj).length;
+    var subscribe = 0;  /* Подписка на ожидание или решение заявки*/
+    var clone_fruit = window.fruit;
+
+  function ready(){
+    if (window.plf > 0){
+      // document.getElementById('start').disabled = false;
+        window.fruit_file(obj);
+    } else {
+      // document.getElementById('start').disabled = true;
+    }
+  };
+  document.addEventListener("DOMContentLoaded", ready);
+   </script>
+
+  <script type="text/javascript">
+    function submit_figure(event) {
+      // alert('my');
+      // alert(window.dis);
+      if (window.dis == 0){
+        moveprogress(0);
+        window.subscribe = 0;
+
+        window.clone_fruit = window.fruit;
+
+        // h = 0;
+        // for(var h in window.clone_fruit) {
+        //   h += 1;
+        // }
+        // alert(h);
+        window.intervalID = setInterval(eee, 2000);
+      } else {
+      /* Добавить обработчик если пользователь отписался от заявки на расчет */
+        window.subscribe = 1;
+      }
+      status_opt('Inquiry!');
+      return false
+    }
+
+    function submit_kml(form) {
+
+      var searchForm = document.forms["myForm"];
+      var keyBox = searchForm.elements["fkml"];
+
+      var i = keyBox.value;
+      i = i.substr(i.length - 4, i.length).toLowerCase();
+      i = i.replace('.','');
+      switch(i){
+        case 'txt':
+            form.submit();
+            break;
+        case 'xlsx':
+            form.submit();
+            break;
+        default:
+          alert('no extension file (txt) or (xlsx)');
+          break;
+      }
+    }
+
+    function optnew(){
+      var div = document.createElement('div');
+      div.id = 'optimization';
+      home.appendChild(div);
+
+      var div_load = document.createElement('div');
+      div_load.className = 'loader-fb';
+      optimization.appendChild(div_load);
+    }
+
+    function Bad_server(){
+        alert( 'Sorry server is not responding ' );
+        var element=document.getElementById('optimization');
+        if (element){
+          home.removeChild(element);
+        }
+        clearInterval(window.intervalID);
+        status_opt('Please, reload page!');
+        document.getElementById('start').disabled = true;
+        window.dis = 0;
+    }
+
+    function optlost(){
+      var element=document.getElementById('optimization');
+      if (element){
+        home.removeChild(element);
+      }
+    }
+
+    function status_opt(txt){
+      form = document.forms.optimus;
+      var elems = form.elements.tender;
+      elems.value = txt;
+    }
+
+    function eee(){
+        var xmlhttp;
+        // Are we using a modern browser or ...
+        if (window.XMLHttpRequest) {
+          // code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+        } else {
+          // code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        if (!xmlhttp){
+          alert("Error initializing XMLHttpRequest!");
+        }
+
+        function GetItems(){
+          if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            var jsonobj = JSON.parse(xmlhttp.responseText);
+
+            if (jsonobj[1] == "stop"){
+                window.dis = 0;
+                status_opt('Start optimization!');
+                clearInterval(window.intervalID);
+                // optlost();
+                document.getElementById('start').disabled = false;
+              }
+            else if(jsonobj[1] == "wait"){
+                window.dis = 1;
+                status_opt('Waiting');
+              }
+            else if (jsonobj[1] == "start"){
+                  window.dis = 1;
+                  var getoptm=document.getElementById('optimization');
+                  if (!getoptm){
+                    // optnew();
+                  }
+                  status_opt('Calculation');
+            }
+            else if (jsonobj[1] == "result"){
+                window.dis = 0;
+                status_opt('Start optimization!');
+                clearInterval(window.intervalID);
+                // optlost();
+                document.getElementById('start').disabled = false;
+                location.href = '/result?unique=' + window.unique;
+              } else {
+                alert('аннулирована заявка ' + jsonobj[1]);
+                // window.dis = 0;
+                // clearInterval(window.intervalID);
+                // optlost();
+                Bad_server();
+              }
+
+          var widthprogress = parseInt(jsonobj[4]);
+          // alert(widthprogress);
+
+          if (widthprogress > 0){
+            moveprogress(widthprogress);
+          } else {
+            moveprogress(0);
+          }
+
+          sms = jsonobj[3];
+          var smsdoc = document.getElementById('message');
+          smsdoc.innerHTML = sms;
+
+          appu = jsonobj[2];
+          var appdoc = document.getElementById('usapp');
+          appdoc.innerHTML = appu;
+
+          uscur = jsonobj[5];
+          var usridx = document.getElementById('usidx');
+          usridx.innerHTML = uscur;
+
+
+          } else {
+              alert("Server, data not available");
+              Bad_server();
+              // window.dis = 0;
+              // clearInterval(window.intervalID);
+              // optlost();
+            }
+          }
+
+        xmlhttp.onload = GetItems;
+        xmlhttp.onerror = Bad_server;
+        // send the request in an async way
+        xmlhttp.open("POST", "/getallitems.json", true);
+        xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+        // u = 0;
+        // for(var index in window.fruit) {
+        //     u += 1;
+        // }
+        // alert(u);
+
+        var json_name = 'json_name=' + JSON.stringify(
+          {'unique':window.unique,
+           'subscribe': window.subscribe,
+           'fruit': window.clone_fruit
+         });
+
+        xmlhttp.send(json_name);
+        window.clone_fruit = {};
+      }
+   </script>
+
+   <script>
+           var loadDeferredStyles = function() {
+             var addStylesNode = document.getElementById("deferred-styles");
+             var replacement = document.createElement("div");
+             replacement.innerHTML = addStylesNode.textContent;
+             document.body.appendChild(replacement)
+             addStylesNode.parentElement.removeChild(addStylesNode);
+           };
+           var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+               webkitRequestAnimationFrame || msRequestAnimationFrame;
+           if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+           else window.addEventListener('load', loadDeferredStyles);
+   </script>
+
+   <div id="scroller" class="b-top" style="display: none;"><span class="b-top-but"></span></div>
+
+</body>
+</html>

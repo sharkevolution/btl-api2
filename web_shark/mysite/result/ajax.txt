@@ -1,0 +1,3 @@
+http://w-code.ru/jscript/ajax/ajax-xmlhttprequest
+http://stackoverflow.com/questions/12558464/bottle-request-json-getting-a-405-on-post
+https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/timeout

@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Оптимизация раскроя штрипса</title>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="Cache-Control" content="no-cache"> -->
+    <meta name="description" content="Оптимизация раскроя, алгоритм двумерной упаковки в полуограниченную полосу">
+    <meta name="Keywords" content="раскрой, штрипс, раскладка, упаковка, ножи, перестановки, оптимизация, алгоритм, двумерная упаковка">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function (d, w, c) {
+            (w[c] = w[c] || []).push(function() {
+                try {
+                    w.yaCounter42227109 = new Ya.Metrika({
+                        id:42227109,
+                        clickmap:true,
+                        trackLinks:true,
+                        accurateTrackBounce:true
+                    });
+                } catch(e) { }
+            });
+
+            var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+            s.type = "text/javascript";
+            s.async = true;
+            s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", f, false);
+            } else { f(); }
+        })(document, window, "yandex_metrika_callbacks");
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/42227109" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <script type="text/javascript">
+
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-89708631-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
+    <script type="text/javascript">
+      function addScript(src){
+        var script = document.createElement('script');
+        script.src = src;
+        script.async = false; // чтобы гарантировать порядок
+        document.head.appendChild(script);
+      }
+      addScript("https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js");
+      addScript("js/pushy.min.js");
+    </script>
+
+    <noscript id="deferred-styles">
+      <link href="static/scnr.css" rel="stylesheet" type="text/css">
+      <link href="static/calc.css" rel="stylesheet" type="text/css">
+      <link href="css/pushy.css" rel="stylesheet" type="text/css">
+    </noscript>
+</head>
+
+<body>
+  <!-- Pushy Menu -->
+  <nav class="pushy pushy-left">
+      <ul>
+          <!-- Submenu -->
+          <li class="pushy-submenu">
+              <!-- <a href="#">Инструкция</a>
+              <ul>
+                  <li class="pushy-link"><a href="#">Item 1</a></li>
+                  <li class="pushy-link"><a href="#">Item 2</a></li>
+                  <li class="pushy-link"><a href="#">Item 3</a></li>
+              </ul>
+          </li> -->
+          <li class="pushy-link"><a href="/">На главную</a></li>
+          <li class="pushy-link"><a href="/mystory">Обо мне</a></li>
+      </ul>
+  </nav>
+
+  <!-- Site Overlay -->
+  <div class="site-overlay"></div>
+
+  <!-- Your Content -->
+  <div id="container">
+
+  <div id="wrapper">
+    <!-- Menu Button -->
+    <div class='navbar navbar-fixed-top'>
+      <div class="menu-btn">&#9776; Menu</div>
+        <h1>Block packing</h1>
+    </div>
+      <div id="open_home">
+          <div class="align_center">
+            <div class="align_center_to_left">
+                <div class="align_center_to_right">
+                    <form id="open_lime" action="/open" enctype="multipart/form-data" method="post">
+                      <ul>
+                        <li>
+                           <h2>Contact Us</h2>
+                           <span class="required_notification">* Denotes Required Field</span>
+                        </li>
+                        <li>
+                          <label for="name">Номер телефона</label>
+                          <input type="text" name="name" />
+                        </li>
+                        <li>
+                          <label for="pass">Логин</label>
+                          <input type="text" name="pass" />
+                        </li>
+                        <li>
+                          <button class="submit" type="submit">Submit Form</button>
+                        </li>
+                      </ul>
+                    </form>
+                </div>
+            </div>
+          </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <a class="twit" rel="nofollow" href="https://twitter.com/nsitala" title="sharkevo.ru"></a>
+
+    <p align="center">
+      &#169; 2017 Shark Evolution.<br>nsitala@gmail.com +(380)732-218-247
+    </p>
+  </div>
+
+  <script>
+          var loadDeferredStyles = function() {
+            var addStylesNode = document.getElementById("deferred-styles");
+            var replacement = document.createElement("div");
+            replacement.innerHTML = addStylesNode.textContent;
+            document.body.appendChild(replacement)
+            addStylesNode.parentElement.removeChild(addStylesNode);
+          };
+          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+              webkitRequestAnimationFrame || msRequestAnimationFrame;
+          if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+          else window.addEventListener('load', loadDeferredStyles);
+  </script>
+
+</body>
+</html>

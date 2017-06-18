@@ -1,0 +1,11 @@
+bottle
+gunicorn
+bottle-pgsql
+openpyxl
+pytz
+python-dateutil
+numpy
+jinja2
+wsgigzip
+cherrypy
+psycopg2

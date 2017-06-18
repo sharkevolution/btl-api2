@@ -1,0 +1,631 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Оптимизация раскроя штрипса</title>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="Cache-Control" content="no-cache"> -->
+    <meta name="description" content="Оптимизация раскроя, алгоритм двумерной упаковки в полуограниченную полосу">
+    <meta name="Keywords" content="раскрой, штрипс, штрипса, раскладка, упаковка, ножи, перестановки, оптимизация, алгоритм, двумерная упаковка, карты раскроя, программа раскроя">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Yandex.Metrika counter -->
+    <!-- <script type="text/javascript">
+        (function (d, w, c) {
+            (w[c] = w[c] || []).push(function() {
+                try {
+                    w.yaCounter42227109 = new Ya.Metrika({
+                        id:42227109,
+                        clickmap:true,
+                        trackLinks:true,
+                        accurateTrackBounce:true
+                    });
+                } catch(e) { }
+            });
+
+            var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+            s.type = "text/javascript";
+            s.async = true;
+            s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", f, false);
+            } else { f(); }
+        })(document, window, "yandex_metrika_callbacks");
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/42227109" style="position:absolute; left:-9999px;" alt="" /></div></noscript> -->
+    <!-- /Yandex.Metrika counter -->
+
+    <script type="text/javascript">
+
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-89708631-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+
+    <script src="lib/calc.js"></script>
+    <script type="text/javascript">
+      function addScript(src){
+        var script = document.createElement('script');
+        script.src = src;
+        script.async = false; // чтобы гарантировать порядок
+        document.head.appendChild(script);
+      }
+      addScript("https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js");
+      addScript("js/pushy.min.js");
+      addScript("lib/scrollup.js");
+    </script>
+
+    <noscript id="deferred-styles">
+        <!-- <link rel="stylesheet" media="(max-width: 640px)" href="static/scnr.css" type="text/css"> -->
+        <link href="static/scnr.css" rel="stylesheet" type="text/css">
+        <link href="static/calc.css" rel="stylesheet" type="text/css">
+        <link href="css/pushy.css" rel="stylesheet" type="text/css">
+    </noscript>
+</head>
+
+<body>
+  <!-- Pushy Menu -->
+  <nav class="pushy pushy-left">
+      <ul>
+          <!-- Submenu -->
+          <li class="pushy-submenu">
+              <!-- <a href="#">Инструкция</a>
+              <ul>
+                  <li class="pushy-link"><a href="#">Item 1</a></li>
+                  <li class="pushy-link"><a href="#">Item 2</a></li>
+                  <li class="pushy-link"><a href="#">Item 3</a></li>
+              </ul>
+          </li> -->
+          <li class="pushy-link"><a href="/">На главную</a></li>
+          <li class="pushy-link"><a href="/mystory">Обо мне</a></li>
+      </ul>
+  </nav>
+
+  <!-- Site Overlay -->
+  <div class="site-overlay"></div>
+
+  <!-- Your Content -->
+  <div id="container">
+    <!-- Menu Button -->
+    <div class='navbar navbar-fixed-top'>
+      <div class='top-title'>
+        <div class="menu-btn">&#9776; Menu</div>
+        <h1>Block packing</h1>
+      </div>
+      <div class="maket">
+        <p>Оптимальный раскрой штрипса</p>
+        <form id='register' enctype="multipart/form-data" method="post">
+          <button value="Login" id='reg' class="login-style login_btn">Регистрация</button>
+          <button value="In" id='account' class="login-style login_in">Вход</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="wrapper">
+      <div class="open_home">
+        <div class="start_module">
+          <form id='home' name='optimus' enctype="multipart/form-data" method="post"
+          onsubmit="submit_figure(this.form);return false;">
+              <input type="submit" value="Start optimization!" id='start' name='tender' value="">
+              <input type="hidden" name="code" id="private" value="{{private_code}}">
+              <input type="hidden" id="resolution" value='0'>
+          </form>
+          <div id="userapp">
+            <table class="tab-style">
+               <tr>
+                  <td>В очереди</td>
+                  <td id='usapp'></td>
+               </tr>
+               <tr>
+                  <td>Номер</td>
+                  <td id='usidx'></td>
+               </tr>
+            </table>
+          </div>
+      </div>
+
+      <div id="myProgress">
+        <div id="myBar">
+          <div id="label">0%</div>
+        </div>
+      </div>
+      <div id="message"></div>
+      <div id="form_step">
+          <div class="poly">
+            <div class="load_file">
+              <h3>Загрузка данных (.xlsx | .txt)</h3>
+              <form id='myForm' action="/upload_figure" enctype="multipart/form-data" method="post">
+                  <p>
+                    <input type="file" onchange="submit_kml(this.form);" name="fkml">
+                    <input type="hidden" name="code" id="private" value="{{private_code}}">
+                  </p>
+              </form>
+            </div>
+          </div>
+          <div id="background"><!-- Main background -->
+                 <div id="main">
+                     <div class="rows">
+                       <button value="1" class="btn-style num-bg num first-child">1</button>
+                       <button value="2" class="btn-style num-bg num">2</button>
+                       <button value="3" class="btn-style num-bg num">3</button>
+                       <button value="4" class="btn-style num-bg num first-child">4</button>
+                     </div>
+                     <div class="rows">
+                       <button value="5" class="btn-style num-bg num">5</button>
+                       <button value="6" class="btn-style num-bg num">6</button>
+                       <button value="7" class="btn-style num-bg num first-child">7</button>
+                       <button value="8" class="btn-style num-bg num">8</button>
+                      </div>
+                    <div class="rows">
+                       <button value="9" class="btn-style num-bg num">9</button>
+                       <button value="0" class="btn-style num-bg num">0</button>
+                       <button value="F" id='figure' class="btn-style opera-bg fall-back">F</button>
+                       <button value="C" id='count' class="btn-style opera-bg value align">C</button>
+                     </div>
+                     <div id="first-rows">
+                        <button class="del-bg" id="delete">D</button>
+                        <input type="text" id='size' value="" size="4" disabled=1 />
+                      </div>
+                  </div>
+          </div>
+          <div id='infigure'>
+            <div id='cur'>
+              <!-- <ul id='current_data'>
+                <li id='crf'><p>Figure:</p></li>
+                <li id='amf'><p>Count:</p></li>
+              </ul> -->
+              <table class="tab-style">
+                 <tr>
+                    <td>Figure</td>
+                    <td id='crf'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Count</td>
+                    <td id='amf'>0</td>
+                 </tr>
+              </table>
+            </div>
+
+            <div id='total'>
+              <!-- <ul id='total_data'>
+                <li id='tof'><p>Total figure:</p></li>
+                <li id='tocn'><p>Total count:</p></li>
+                <li id='limcn'><p>Limit count :</p></li>
+              </ul> -->
+              <table class="tab-style">
+                 <tr>
+                    <td>Total figure</td>
+                    <td id='tof'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Total count</td>
+                    <td id='tocn'>0</td>
+                 </tr>
+                 <tr>
+                    <td>Limit count</td>
+                    <td id='limcn'>0</td>
+                 </tr>
+              </table>
+            </div>
+           </div>
+
+           <!-- <div id="map">
+             <form method="POST" action="https://api.privatbank.ua/p24api/ishop">
+               <input type="hidden" name="amt" value="0.00" />
+               <input type="hidden" name="ccy" value="UAH" />
+               <input type="hidden" name="merchant" value="124535" />
+               <input type="hidden" name="order" value="12508" />
+               <input type="hidden" name="details" value="упаковка" />
+               <input type="hidden" name="ext_details" value="Алгоритм упаковки блоков в полуограниченную полосу" />
+               <input type="hidden" name="pay_way" value="privat24" />
+               <input type="hidden" name="return_url" value="http://sharkevo.ru" />
+               <input type="hidden" name="server_url" value="http://payment" />
+               <button type="submit"><img src="static/api_logo_2.jpg" border="0" /></button>
+             </form>
+           </div> -->
+
+      </div>
+        <div class="geolist">
+          <h3>Список и количество фигур</h3>
+          <div class="help_load">
+            <form id='export_data' enctype="multipart/form-data" method="post">
+              <!-- <button id="plan" class="help-style">Plan</button> -->
+              <button id="save" class="help-style" onclick="submit_export(this.form);return false;" name="onex">Save</button>
+            </form>
+          </div>
+          <form id='listfruit' name="mylist">
+              <!-- <fieldset>
+                <input class='inp operator' type="checkbox" value="Start"><label for="raz">описание</label>
+              </fieldset> -->
+          </form>
+
+            <!-- <ul id='namepolygon'> -->
+                <!-- {% for zname in zona %}
+                <li><a>{{ zname }}</a></li>
+                {% endfor %} -->
+            <!-- </ul> -->
+        </div>
+        <div class="geolist field_settings">
+          <h3>Настройки алгоритма</h3>
+          <div class='knox'>
+          <form>
+            <input type="range" id="rangeInput" name="rangeInput" min="1" max="10" value="8"
+                   oninput="amount.value=rangeInput.value">
+            <output name="amount" for="rangeInput">8</output>
+          </form>
+          <div class='comnt'><output>&nbsp ножей</output></div>
+        </div>
+
+        <div class='canvas_width'>
+        <form>
+          <input type="range" id="rangeInput_1" name="rangeInput_1" min="90" max="200" value="90" step="5"
+                 oninput="amount.value=rangeInput_1.value">
+          <output name="amount" for="rangeInput_1">90</output>
+        </form>
+          <div class='comnt'><output>&nbsp миним. остаток</output></div>
+        </div>
+        <div class='canvas_matrix'>
+        <form>
+          <input type="range" id="rangeInput_2" name="rangeInput_2" min="1" max="20" value="1" step="1"
+                 oninput="amount.value=rangeInput_2.value">
+          <output name="amount" for="rangeInput_2">1</output>
+        </form>
+          <div class='comnt'><output>&nbsp матриц</output></div>
+        </div>
+          <p>
+            Ширина полосы 1250 мм
+          </p>
+          <!-- <p>
+            Минимальный остаток 90мм
+          </p><br>
+          <p>
+            Фактические возможности настройки алгоритма (ширина, остаток, кол-во ножей) - без ограничений
+          </p> -->
+        </div>
+    </div>
+    <div class='rightbox'>
+      <h3>Видео инструкция</h3>
+      <iframe width="290" height="215"
+        src="https://www.youtube.com/embed/EA0WTPVzbW8" frameborder="0" allowfullscreen>
+      </iframe>
+      <h3>Пример работы</h3>
+      <iframe width="290" height="215"
+        src="https://www.youtube.com/embed/cEVa8i-2JVg" frameborder="0" allowfullscreen>
+      </iframe>
+    </div>
+    <div class='rightbox'>
+      <h3>Примеры файлов для загрузки</h3>
+      <p>
+        Файл в формате Microsoft Excel
+        <a href="analiz_data/xltest.xlsx">xltest.xlsx</a>
+      </p>
+      <p>
+        Файл в текстовом формате
+        <a href="analiz_data/test.txt">test.txt</a>
+      </p>
+      <p>
+        После сохранения тестового файла на устройстве, загрузите его через "Загрузка данных" Обзор, выше на сайте.
+      </p>
+
+    </div>
+    <div class='rightbox'>
+      <h3>Отработанные примеры</h3>
+      <p>
+         Файл решений для анализа смотри
+        <a href="analiz_data/result.xlsx">здесь</a>
+      </p>
+    </div>
+
+      <div class='rightbox'>
+        <h3>Дружественные ресурсы</h3>
+        <p>
+          Высококачественные листы профнастила от завода производителя можно заказать
+          <a href="http://www.dizayn4you.com.ua/profnastil.html">здесь.</a>
+          Доставка собственным транспортом.
+        </p>
+        <p>
+        <img src="img/profnastil.jpg" alt="profnastil" width="295" height="144" class="prof_img">
+        </p>
+      </div>
+  </div>
+  <div class='rightbox'>
+    <p>Дата последнего обновления сайта 15.06.2017</p>
+    <p>Используемая версия алгоритма 1.0.4</p>
+  </div>
+
+  <!-- </div> -->
+
+  <div class="footer">
+      <a class="twit" rel="nofollow" href="https://twitter.com/nsitala" title="sharkevo.ru"></a>
+
+    <p align="center">
+      &#169; 2017 Shark Evolution.<br>nsitala@gmail.com +(380)732-218-247
+    </p>
+  </div>
+
+  <script type="text/javascript">
+
+    var dis = 0;
+    var flag_save = 0;
+    var intervalID = 0;
+    var unique = "{{private_code}}";
+    var obj = eval("{{zona}}");
+    var plf = Object.keys(obj).length;
+    var subscribe = 0;  /* Подписка на ожидание или решение заявки*/
+    var clone_fruit = window.fruit;
+
+  function ready(){
+    if (window.plf > 0){
+      // document.getElementById('start').disabled = false;
+        window.fruit_file(obj);
+    } else {
+      // document.getElementById('start').disabled = true;
+    }
+  };
+  document.addEventListener("DOMContentLoaded", ready);
+   </script>
+
+  <script type="text/javascript">
+    function submit_figure(event) {
+      // alert('my');
+      // alert(window.dis);
+      if (window.dis == 0){
+        moveprogress(0);
+        window.subscribe = 0;
+
+        window.clone_fruit = window.fruit;
+
+        // h = 0;
+        // for(var h in window.clone_fruit) {
+        //   h += 1;
+        // }
+        // alert(h);
+        window.knox = document.getElementById('rangeInput').value;
+        window.limright = document.getElementById('rangeInput_1').value;
+        window.attempt = document.getElementById('rangeInput_2').value;
+
+        window.intervalID = setInterval(eee, 3000);
+      } else {
+      /* Добавить обработчик если пользователь отписался от заявки на расчет */
+        window.subscribe = 1;
+      }
+      status_opt('Inquiry!');
+      return false
+    }
+
+    function submit_kml(form) {
+
+      var searchForm = document.forms["myForm"];
+      var keyBox = searchForm.elements["fkml"];
+
+      var i = keyBox.value;
+      i = i.substr(i.length - 4, i.length).toLowerCase();
+      i = i.replace('.','');
+      switch(i){
+        case 'txt':
+            form.submit();
+            break;
+        case 'xlsx':
+            form.submit();
+            break;
+        default:
+          alert('no extension file (txt) or (xlsx)');
+          break;
+      }
+    }
+
+    function submit_export() {
+      if (window.flag_save == 0) {
+          window.interval_export = setInterval(start_export, 3000);
+          window.flag_save = 1;
+      } else {
+        // alert(window.flag_save);
+      }
+    }
+
+    function start_export(){
+      var xmlhttp;
+      // Are we using a modern browser or ...
+      if (window.XMLHttpRequest) {
+        // code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+      } else {
+        // code for IE6, IE5
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      if (!xmlhttp){
+        alert("Error initializing XMLHttpRequest!");
+      }
+
+      function GetResult(){
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+          var jsonret = JSON.parse(xmlhttp.responseText);
+
+          if (jsonret[1] == "prepared_file"){
+              clearInterval(window.interval_export);
+              location.href = '/export?unique=' + window.unique;
+              window.flag_save = 0;
+            }
+        } else {
+            alert("Server, data not available");
+          }
+        }
+
+      xmlhttp.onload = GetResult;
+      // xmlhttp.onerror = Bad_server;
+      // send the request in an async way
+      xmlhttp.open("POST", "/feedback.json", true);
+      xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+      var json_file = 'json_file=' + JSON.stringify(
+        {'exp': window.fruit,
+        'unique':window.unique
+      });
+
+      xmlhttp.send(json_file);
+    }
+
+
+    function optnew(){
+      var div = document.createElement('div');
+      div.id = 'optimization';
+      home.appendChild(div);
+
+      var div_load = document.createElement('div');
+      div_load.className = 'loader-fb';
+      optimization.appendChild(div_load);
+    }
+
+    function Bad_server(){
+        alert( 'Sorry server is not responding ' );
+        var element=document.getElementById('optimization');
+        if (element){
+          home.removeChild(element);
+        }
+        clearInterval(window.intervalID);
+        status_opt('Please, reload page!');
+        document.getElementById('start').disabled = true;
+        window.dis = 0;
+    }
+
+    function optlost(){
+      var element=document.getElementById('optimization');
+      if (element){
+        home.removeChild(element);
+      }
+    }
+
+    function status_opt(txt){
+      form = document.forms.optimus;
+      var elems = form.elements.tender;
+      elems.value = txt;
+    }
+
+    function eee(){
+        var xmlhttp;
+        // Are we using a modern browser or ...
+        if (window.XMLHttpRequest) {
+          // code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+        } else {
+          // code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        if (!xmlhttp){
+          alert("Error initializing XMLHttpRequest!");
+        }
+
+        function GetItems(){
+          if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            var jsonobj = JSON.parse(xmlhttp.responseText);
+
+            if (jsonobj[1] == "stop"){
+                window.dis = 0;
+                status_opt('Start optimization!');
+                clearInterval(window.intervalID);
+                // optlost();
+                document.getElementById('start').disabled = false;
+              }
+            else if(jsonobj[1] == "wait"){
+                window.dis = 1;
+                status_opt('Waiting');
+              }
+            else if (jsonobj[1] == "start"){
+                  window.dis = 1;
+                  var getoptm=document.getElementById('optimization');
+                  if (!getoptm){
+                    // optnew();
+                  }
+                  status_opt('Calculation');
+            }
+            else if (jsonobj[1] == "result"){
+                window.dis = 0;
+                status_opt('Start optimization!');
+                clearInterval(window.intervalID);
+                // optlost();
+                document.getElementById('start').disabled = false;
+                location.href = '/result?unique=' + window.unique;
+              } else {
+                alert('аннулирована заявка ' + jsonobj[1]);
+                Bad_server();
+              }
+
+          var widthprogress = parseInt(jsonobj[4]);
+          // alert(widthprogress);
+
+          if (widthprogress > 0){
+            moveprogress(widthprogress);
+          } else {
+            moveprogress(0);
+          }
+
+          sms = jsonobj[3];
+          var smsdoc = document.getElementById('message');
+          smsdoc.innerHTML = sms;
+
+          appu = jsonobj[2];
+          var appdoc = document.getElementById('usapp');
+          appdoc.innerHTML = appu;
+
+          uscur = jsonobj[5];
+          var usridx = document.getElementById('usidx');
+          usridx.innerHTML = uscur;
+
+          } else {
+              alert("Server, data not available");
+              Bad_server();
+            }
+          }
+
+        xmlhttp.onload = GetItems;
+        xmlhttp.onerror = Bad_server;
+        // send the request in an async way
+        xmlhttp.open("POST", "/getallitems.json", true);
+        xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+        // u = 0;
+        // for(var index in window.fruit) {
+        //     u += 1;
+        // }
+        // alert(u);
+
+        var json_name = 'json_name=' + JSON.stringify(
+          {'unique':window.unique,
+           'subscribe': window.subscribe,
+           'fruit': window.clone_fruit,
+           'knox': window.knox,
+           'limright': window.limright,
+           'attempt': window.attempt
+         });
+
+        xmlhttp.send(json_name);
+        window.clone_fruit = {};
+      }
+   </script>
+
+   <script>
+           var loadDeferredStyles = function() {
+             var addStylesNode = document.getElementById("deferred-styles");
+             var replacement = document.createElement("div");
+             replacement.innerHTML = addStylesNode.textContent;
+             document.body.appendChild(replacement)
+             addStylesNode.parentElement.removeChild(addStylesNode);
+           };
+           var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+               webkitRequestAnimationFrame || msRequestAnimationFrame;
+           if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+           else window.addEventListener('load', loadDeferredStyles);
+   </script>
+
+   <div id="scroller" class="b-top" style="display: none;"><span class="b-top-but"></span></div>
+
+</body>
+</html>

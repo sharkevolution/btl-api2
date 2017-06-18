@@ -1,0 +1,264 @@
+@font-face {
+    font-family: HelveticaNeue; /* Гарнитура шрифта */
+    src: url('../font/HelveticaNeue.ttf'); /* Путь к файлу со шрифтом */
+   }
+
+#background {
+    display: block;
+    width: 190px;
+    float: left;
+    position: relative;
+    margin-top: 5px;
+    margin-bottom: 7px;
+}
+
+#infigure {
+  display: block;
+  position: relative;
+  margin-top: 10px;
+  margin-left: 3px;
+  float: left;
+  width: 105px;
+  /*background-color: #FAF0F6;*/
+}
+
+#infigure p {
+    margin: 0 0 9px;
+    font-family: HelveticaNeue,Arial,sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 5px;
+}
+
+#infigure ul{
+  list-style-type: none;
+  margin-left: 0;
+  padding: 0;
+  padding-left: 5px;
+  margin-bottom: 2px;
+}
+
+#infigure ul li{
+  padding-bottom: 4px;
+  font-family: HelveticaNeue;
+}
+
+#cur {
+  display: block;
+  position: relative;
+  float: left;
+  border-bottom: 1px solid #dcdcdc;
+  margin: 0 0 5px;
+  font-family: HelveticaNeue,Arial,sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 15px;
+  font-weight: normal;
+  padding-bottom: 5px;
+}
+
+#total {
+  display: block;
+  position: relative;
+  float: left;
+  margin: 0 0 10px;
+  font-family: HelveticaNeue,Arial,sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+
+button {
+    border:0;
+    color:#fff;
+}
+
+/*#result {
+    display:block;
+    font-family: sans-serif;
+    width:230px;
+    height:40px;
+    margin:10px auto;
+    text-align: right;
+    border:0;
+    background:#3b3535;
+    color:#fff;
+    padding-top:20px;
+    font-size:20px;
+    margin-left: 25px;
+    outline: none;
+    overflow: hidden;
+    letter-spacing: 4px;
+    position: relative;
+    top:10px;
+}*/
+
+/*#result:hover {
+
+    cursor: text;
+
+}*/
+
+/*#first-rows {
+    margin-bottom: 20px;
+    position: relative;
+    top:10px;
+}*/
+
+input:not([type="submit"]):not([type="file"]):not([type="checkbox"]), textarea {
+    /*font-size: 25px;
+    padding: 3px 5px;
+    width: 65px;
+    margin-top:5px;
+    margin-left:1px;*/
+
+    font-size: 22px;
+    padding: 4px 7px;
+    width: 65px;
+    /* margin-top: 5px; */
+    margin-left: 1px;
+    color: #000;
+
+}
+
+.btn-style:disabled {
+    background: #dddddd;
+}
+
+.rows {
+    /*width:250px;*/
+    margin-top:5px;
+}
+
+#first-rows {
+    /*width:250px;*/
+    margin-top:5px;
+}
+
+#delete {
+    width:40px;
+    height:40px;
+    margin-left:1px;
+    border-radius:4px;
+}
+
+/* Aligning the division and dot button properly */
+.fall-back {
+    margin-left:1px !important;
+}
+
+/* Aligning the addition and equals to button properly */
+.align {
+    margin-left: 1px !important;
+}
+
+/* Button styling */
+.btn-style {
+    width:40px;
+    height:40px;
+    margin-left:1px;
+    border-radius:4px;
+}
+
+.eqn {
+    width:40px;
+    height:40px;
+    margin-left:1px;
+    border-radius:4px;
+}
+
+.first-child {
+ margin-left:1px;
+}
+
+
+/* Adding background color to the number values */
+ .num-bg {
+    background-color:rgb(213, 185, 119);
+    background-image: url(noise.png);
+    /*background-image: url(noise.png);*/
+    background-image: -webkit-gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0.7) ));
+    background-image: -moz-radial-gradient(top, ellipse cover, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
+    background-image: gradient(radial, 50% 0, 100, 50% 0, 0, from( rgba(255,255,255,0) ), to( rgba(255,255,255,0.7) ));
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    text-shadow: rgba(255,255,255,.5) 0 -1px 0, rgba(0,0,0,0.18) 0 .18em .15em;
+    color:#000;
+    font-size:20px;
+    cursor:pointer;
+    outline:none;
+    /*border-bottom:3px solid #333;*/
+}
+
+ .num-bg:active {
+    /*background:rgb(13, 110, 98);*/
+    background: #000000;
+    color:#fff;
+    font-size:20px;
+    cursor:pointer;
+    outline:none;
+    box-shadow: inset 5px 5px 5px #555;
+}
+
+/*Adding background color to the operator values */
+.opera-bg {
+    background:rgb(154, 195, 167);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    text-shadow: rgba(255,255,255,.5) 0 -1px 0, rgba(0,0,0,0.18) 0 .18em .15em;
+
+    color:#000000;
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    /*border-bottom:3px solid #555;*/
+}
+
+.opera-bg:active {
+    /*background:rgb(13, 110, 98);*/
+    background: #000000;
+    color:#fff;
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    box-shadow: inset 4px 4px 4px #555;
+}
+
+/*Adding a background color to the delete button */
+.del-bg {
+    background:rgb(0, 0, 0);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    text-shadow: rgba(255,255,255,.5) 0 -1px 0, rgba(0,0,0,0.18) 0 .18em .15em;
+    color:#FFF;
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    /*border-bottom:3px solid #399cb9;*/
+}
+
+.del-bg:active {
+    /*background:rgb(13, 110, 98);*/
+    background:rgb(213, 185, 119);
+    color:#000;
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    box-shadow: inset 2px 2px 2px #399cb9;
+}
+
+/*Adding a background color to the equals to button */
+#eqn-bg {
+    /*background:#17a928;*/
+    /*color:#fff;*/
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    /*border-bottom:3px solid #1f7a29;*/
+}
+
+#eqn-bg:active {
+    /*background:#17a928;*/
+    /*color:#fff;*/
+    font-size:20px;
+    cursor: pointer;
+    outline:none;
+    box-shadow: inset 4px 4px 4px #1f7a29;
+}
